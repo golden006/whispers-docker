@@ -22,7 +22,8 @@ ENV UV_COMPILE_BYTECODE=1 \
     PATH="/app/.venv/bin:$PATH"
 
 RUN uv venv && \
-    uv sync --frozen
+    uv sync --frozen && \
+    uv pip install "uvicorn[standard]>=0.30.0" "fastapi>=0.110.0" "python-multipart>=0.0.9"
 
 # Copy application code
 COPY . .
@@ -36,7 +37,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.10 python3.10-venv \
-    ffmpeg tini \
+    ffmpeg tini curl \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
