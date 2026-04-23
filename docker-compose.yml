@@ -1,0 +1,24 @@
+services:
+  whisperx-cpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.cpu
+    image: whisperx-cpu:latest
+    container_name: whisperx
+    ports:
+      - "2948:2948"
+    volumes:
+      - ./audio:/app/audio:ro
+      - model-cache:/root/.cache/huggingface
+      - whisper-cache:/root/.cache/whisper
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2948/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    restart: unless-stopped
+
+volumes:
+  model-cache:
+  whisper-cache:

@@ -9,25 +9,25 @@ requires-python = ">=3.10, <3.14"
 license = { text = "BSD-2-Clause" }
 
 dependencies = [
-    "ctranslate2>=4.5.0",
-    "faster-whisper>=1.2.0",
-    "nltk>=3.9.1",
-    "numpy>=2.1.0",
-    "omegaconf>=2.3.0",
-    "pandas>=2.2.3",
-    "pyannote-audio>=4.0.0",
-    "huggingface-hub<1.0.0",
-    "torch~=2.8.0",
-    "torchaudio~=2.8.0",
-    "torchvision~=0.23.0",
-    "torchcodec>=0.6.0,<0.8.0; (sys_platform == 'linux' and platform_machine == 'x86_64') or sys_platform == 'darwin' or sys_platform == 'win32'",
-    "transformers>=4.48.0",
-    "triton>=3.3.0; sys_platform == 'linux' and platform_machine == 'x86_64'" # only install triton on x86_64 Linux
+     "ctranslate2>=4.5.0",
+     "faster-whisper>=1.2.0",
+     "nltk>=3.9.1",
+     "numpy>=2.1.0",
+     "omegaconf>=2.3.0",
+     "pandas>=2.2.3",
+     "pyannote-audio>=4.0.0",
+     "huggingface-hub<1.0.0",
+     "torch~=2.8.0",
+     "torchaudio~=2.8.0",
+     "torchvision~=0.23.0",
+     "torchcodec>=0.6.0,<0.8.0; (sys_platform == 'linux' and platform_machine == 'x86_64') or sys_platform == 'darwin' or sys_platform == 'win32'",
+     "transformers>=4.48.0",
+     "triton>=3.3.0; sys_platform == 'linux' and platform_machine == 'x86_64'" # only install triton on x86_64 Linux
 ]
-
 
 [project.optional-dependencies]
 dev = ["pytest"]
+server = ["uvicorn[standard]>=0.30.0", "fastapi>=0.110.0"]
 
 [project.scripts]
 whisperx = "whisperx.__main__:cli"
@@ -45,22 +45,22 @@ include = ["whisperx*"]
 # torchcodec (transitive dep of pyannote-audio >=4) has no wheels for Linux aarch64
 [tool.uv]
 override-dependencies = [
-    "torchcodec>=0.6.0,<0.8.0; (sys_platform == 'linux' and platform_machine == 'x86_64') or sys_platform == 'darwin' or sys_platform == 'win32'",
+     "torchcodec>=0.6.0,<0.8.0; (sys_platform == 'linux' and platform_machine == 'x86_64') or sys_platform == 'darwin' or sys_platform == 'win32'",
 ]
 
 [tool.uv.sources]
 torch = [
-  { index = "pytorch-cpu", marker = "sys_platform == 'darwin'" },
-  { index = "pytorch-cpu", marker = "platform_machine != 'x86_64' and sys_platform != 'darwin'" },
-  { index = "pytorch", marker = "platform_machine == 'x86_64' and sys_platform != 'darwin'" },
+   { index = "pytorch-cpu", marker = "sys_platform == 'darwin'" },
+   { index = "pytorch-cpu", marker = "platform_machine != 'x86_64' and sys_platform != 'darwin'" },
+   { index = "pytorch", marker = "platform_machine == 'x86_64' and sys_platform != 'darwin'" },
 ]
 torchaudio = [
-  { index = "pytorch-cpu", marker = "sys_platform == 'darwin'" },
-  { index = "pytorch-cpu", marker = "platform_machine != 'x86_64' and sys_platform != 'darwin'" },
-  { index = "pytorch", marker = "platform_machine == 'x86_64' and sys_platform != 'darwin'" },
+   { index = "pytorch-cpu", marker = "sys_platform == 'darwin'" },
+   { index = "pytorch-cpu", marker = "platform_machine != 'x86_64' and sys_platform != 'darwin'" },
+   { index = "pytorch", marker = "platform_machine == 'x86_64' and sys_platform != 'darwin'" },
 ]
 triton = [
-  { index = "pytorch", marker = "sys_platform == 'linux'" },
+   { index = "pytorch", marker = "sys_platform == 'linux'" },
 ]
 
 [[tool.uv.index]]
