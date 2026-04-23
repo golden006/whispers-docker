@@ -1,16 +1,44 @@
 services:
+  whisperx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: whisperx:latest
+    container_name: whisperx
+    ports:
+       - "2948:2948"
+    volumes:
+       - ./audio:/app/audio:ro
+       - model-cache:/root/.cache/huggingface
+       - whisper-cache:/root/.cache/whisper
+    environment:
+       - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2948/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    restart: unless-stopped
+
   whisperx-cpu:
     build:
       context: .
       dockerfile: Dockerfile.cpu
     image: whisperx-cpu:latest
-    container_name: whisperx
+    container_name: whisperx-cpu
     ports:
-      - "2948:2948"
+       - "2949:2948"
     volumes:
-      - ./audio:/app/audio:ro
-      - model-cache:/root/.cache/huggingface
-      - whisper-cache:/root/.cache/whisper
+       - ./audio:/app/audio:ro
+       - model-cache-cpu:/root/.cache/huggingface
+       - whisper-cache-cpu:/root/.cache/whisper
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:2948/health"]
       interval: 30s
@@ -22,3 +50,5 @@ services:
 volumes:
   model-cache:
   whisper-cache:
+  model-cache-cpu:
+  whisper-cache-cpu:
