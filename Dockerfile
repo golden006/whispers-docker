@@ -5,7 +5,8 @@ ENV PYTHONUNBUFFERED=1 \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.10 python3.10-dev python3.10-venv \
-    ffmpeg build-essential curl git tini \
+    ffmpeg build-essential cmake curl git tini \
+    libopenblas-dev \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
@@ -25,11 +26,26 @@ RUN pip install --no-cache-dir \
         "torchaudio==2.8.0" \
         "torchvision==0.23.0"
 
-# Install ctranslate2 with CUDA support for aarch64 from Jetson AI Lab index
-# The standard PyPI aarch64 wheel is CPU-only; this one includes CUDA
-RUN pip install --no-cache-dir \
-        --extra-index-url https://pypi.jetson-ai-lab.dev/jp6/cu126 \
-        "ctranslate2>=4.5.0"
+# Build ctranslate2 from source with CUDA + cuDNN support
+# Required because the PyPI aarch64 wheel is CPU-only
+RUN git clone --recursive https://github.com/OpenNMT/CTranslate2.git /tmp/ctranslate2 && \
+    cd /tmp/ctranslate2 && \
+    mkdir build && cd build && \
+    cmake .. \
+        -DWITH_CUDA=ON \
+        -DWITH_CUDNN=ON \
+        -DWITH_MKL=OFF \
+        -DWITH_OPENBLAS=ON \
+        -DOPENMP_RUNTIME=COMP \
+        -DCMAKE_INSTALL_PREFIX=/usr/local && \
+    make -j$(nproc) && \
+    make install && \
+    ldconfig && \
+    cd /tmp/ctranslate2/python && \
+    pip install --no-cache-dir -r install_requirements.txt && \
+    python setup.py bdist_wheel && \
+    pip install --no-cache-dir dist/*.whl && \
+    rm -rf /tmp/ctranslate2
 
 # Install remaining dependencies from PyPI
 RUN pip install --no-cache-dir \
