@@ -15,19 +15,16 @@ WORKDIR /app
 RUN python3.10 -m venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
-COPY pyproject.toml ./
-
-# Install CUDA PyTorch first using the PyTorch index as primary source
+# Install CUDA PyTorch wheels directly by URL — avoids any index resolution ambiguity
 RUN pip install --upgrade pip setuptools && \
     pip install --no-cache-dir \
-        --index-url https://download.pytorch.org/whl/cu128 \
-        --extra-index-url https://pypi.org/simple \
-        "torch~=2.8.0" \
-        "torchaudio~=2.8.0" \
-        "torchvision~=0.23.0" \
-        "triton>=3.3.0"
+        "https://download.pytorch.org/whl/cu128/torch-2.8.0%2Bcu128-cp310-cp310-linux_x86_64.whl" \
+        "https://download.pytorch.org/whl/cu128/torchaudio-2.8.0%2Bcu128-cp310-cp310-linux_x86_64.whl" \
+        "https://download.pytorch.org/whl/cu128/torchvision-0.23.0%2Bcu128-cp310-cp310-linux_x86_64.whl"
 
-# Install remaining dependencies from PyPI
+COPY pyproject.toml ./
+
+# Install remaining dependencies — torch is already installed so pip won't touch it
 RUN pip install --no-cache-dir \
         "ctranslate2>=4.5.0" \
         "faster-whisper>=1.2.0" \
@@ -38,13 +35,14 @@ RUN pip install --no-cache-dir \
         "pyannote-audio>=4.0.0" \
         "huggingface-hub<1.0.0" \
         "transformers>=4.48.0" \
+        "triton>=3.3.0" \
         "uvicorn[standard]>=0.30.0" \
         "fastapi>=0.110.0" \
         "python-multipart>=0.0.9"
 
-# Copy source and install the whisperx package in editable mode
+# Copy source and install whisperx — no-deps prevents pip re-resolving torch
 COPY . .
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir --no-deps -e .
 
 EXPOSE 2948
 
