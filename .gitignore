@@ -135,12 +135,6 @@ celerybeat.pid
 output.json
 
 # Audio files (mount these via docker volume, don't commit them)
-audio/*.mp3
-audio/*.wav
-audio/*.m4a
-audio/*.flac
-audio/*.ogg
-audio/*.opus
 env/
 venv/
 ENV/
