@@ -17,10 +17,18 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 COPY pyproject.toml ./
 
-# Install dependencies (CUDA PyTorch) — source not needed yet for deps
+# Install CUDA PyTorch first using the PyTorch index as primary source
 RUN pip install --upgrade pip setuptools && \
     pip install --no-cache-dir \
-        --extra-index-url https://download.pytorch.org/whl/cu128 \
+        --index-url https://download.pytorch.org/whl/cu128 \
+        --extra-index-url https://pypi.org/simple \
+        "torch~=2.8.0" \
+        "torchaudio~=2.8.0" \
+        "torchvision~=0.23.0" \
+        "triton>=3.3.0"
+
+# Install remaining dependencies from PyPI
+RUN pip install --no-cache-dir \
         "ctranslate2>=4.5.0" \
         "faster-whisper>=1.2.0" \
         "nltk>=3.9.1" \
@@ -29,11 +37,7 @@ RUN pip install --upgrade pip setuptools && \
         "pandas>=2.2.3" \
         "pyannote-audio>=4.0.0" \
         "huggingface-hub<1.0.0" \
-        "torch~=2.8.0" \
-        "torchaudio~=2.8.0" \
-        "torchvision~=0.23.0" \
         "transformers>=4.48.0" \
-        "triton>=3.3.0" \
         "uvicorn[standard]>=0.30.0" \
         "fastapi>=0.110.0" \
         "python-multipart>=0.0.9"
