@@ -41,6 +41,7 @@ services:
       dockerfile: Dockerfile
     image: whisperx-gpu:latest
     container_name: whisperx-gpu
+    runtime: nvidia
     ports:
       - "2948:2948"
     volumes:
@@ -52,13 +53,8 @@ services:
         required: false
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
       - HF_TOKEN=${HF_TOKEN:-}
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              capabilities: [gpu]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:2948/health"]
       interval: 30s
