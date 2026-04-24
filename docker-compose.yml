@@ -1,6 +1,6 @@
 services:
   # CPU service — default, works on any machine without a GPU
-  # Runs on port 2948, uses tiny model with int8 quantization
+  # Runs on port 2949 so it can coexist with the GPU service on the same machine
   whisperx-cpu:
     build:
       context: .
@@ -8,7 +8,7 @@ services:
     image: whisperx-cpu:latest
     container_name: whisperx-cpu
     ports:
-      - "2948:2948"
+      - "2949:2948"
     volumes:
       - ./audio:/app/audio:ro
       - model-cache-cpu:/root/.cache/huggingface
