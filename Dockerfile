@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.9.0-devel-ubuntu22.04
+FROM nvidia/cuda:12.9.0-cudnn-devel-ubuntu22.04
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
@@ -15,18 +15,24 @@ WORKDIR /app
 RUN python3.10 -m venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
+RUN pip install --upgrade pip setuptools
+
 # Install CUDA PyTorch — cu129 index has aarch64 wheels (cu128 only has x86_64)
-RUN pip install --upgrade pip setuptools && \
-    pip install --no-cache-dir \
+RUN pip install --no-cache-dir \
         --index-url https://download.pytorch.org/whl/cu129 \
         --extra-index-url https://pypi.org/simple \
         "torch==2.8.0" \
         "torchaudio==2.8.0" \
         "torchvision==0.23.0"
 
+# Install ctranslate2 with CUDA support for aarch64 from Jetson AI Lab index
+# The standard PyPI aarch64 wheel is CPU-only; this one includes CUDA
+RUN pip install --no-cache-dir \
+        --extra-index-url https://pypi.jetson-ai-lab.dev/jp6/cu126 \
+        "ctranslate2>=4.5.0"
+
 # Install remaining dependencies from PyPI
 RUN pip install --no-cache-dir \
-        "ctranslate2>=4.5.0" \
         "faster-whisper>=1.2.0" \
         "nltk>=3.9.1" \
         "numpy>=2.1.0" \
@@ -35,7 +41,6 @@ RUN pip install --no-cache-dir \
         "pyannote-audio>=4.0.0" \
         "huggingface-hub<1.0.0" \
         "transformers>=4.48.0" \
-        "triton>=3.3.0" \
         "uvicorn[standard]>=0.30.0" \
         "fastapi>=0.110.0" \
         "python-multipart>=0.0.9"
