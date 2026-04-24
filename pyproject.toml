@@ -27,7 +27,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
-server = ["uvicorn[standard]>=0.30.0", "fastapi>=0.110.0"]
+server = ["uvicorn[standard]>=0.30.0", "fastapi>=0.110.0", "python-multipart>=0.0.9"]
 
 [project.scripts]
 whisperx = "whisperx.__main__:cli"

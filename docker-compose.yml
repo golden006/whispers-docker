@@ -1,18 +1,58 @@
 services:
-  whisperx:
+  # CPU service — default, works on any machine without a GPU
+  # Runs on port 2948, uses tiny model with int8 quantization
+  whisperx-cpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.cpu
+    image: whisperx-cpu:latest
+    container_name: whisperx-cpu
+    ports:
+      - "2948:2948"
+    volumes:
+      - ./audio:/app/audio:ro
+      - model-cache-cpu:/root/.cache/huggingface
+      - whisper-cache-cpu:/root/.cache/whisper
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - HF_TOKEN=${HF_TOKEN:-}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2948/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    restart: unless-stopped
+
+  # GPU service — NVIDIA CUDA, runs large-v2 at full float16 speed
+  # Requires: NVIDIA GPU + nvidia-container-toolkit installed on host
+  #
+  # Usage:
+  #   docker compose --profile gpu up --build -d
+  #
+  # On a GPU machine you can make this the only service by running:
+  #   docker compose --profile gpu up --build -d --scale whisperx-cpu=0
+  whisperx-gpu:
+    profiles: ["gpu"]
     build:
       context: .
       dockerfile: Dockerfile
-    image: whisperx:latest
-    container_name: whisperx
+    image: whisperx-gpu:latest
+    container_name: whisperx-gpu
     ports:
-       - "2948:2948"
+      - "2948:2948"
     volumes:
-       - ./audio:/app/audio:ro
-       - model-cache:/root/.cache/huggingface
-       - whisper-cache:/root/.cache/whisper
+      - ./audio:/app/audio:ro
+      - model-cache-gpu:/root/.cache/huggingface
+      - whisper-cache-gpu:/root/.cache/whisper
+    env_file:
+      - path: .env
+        required: false
     environment:
-       - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+      - HF_TOKEN=${HF_TOKEN:-}
     deploy:
       resources:
         reservations:
@@ -24,31 +64,11 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 120s
-    restart: unless-stopped
-
-  whisperx-cpu:
-    build:
-      context: .
-      dockerfile: Dockerfile.cpu
-    image: whisperx-cpu:latest
-    container_name: whisperx-cpu
-    ports:
-       - "2949:2948"
-    volumes:
-       - ./audio:/app/audio:ro
-       - model-cache-cpu:/root/.cache/huggingface
-       - whisper-cache-cpu:/root/.cache/whisper
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:2948/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 120s
+      start_period: 60s
     restart: unless-stopped
 
 volumes:
-  model-cache:
-  whisper-cache:
   model-cache-cpu:
   whisper-cache-cpu:
+  model-cache-gpu:
+  whisper-cache-gpu:
