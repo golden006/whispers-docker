@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.8.0-devel-ubuntu22.04
+FROM nvidia/cuda:12.9.0-devel-ubuntu22.04
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
@@ -15,16 +15,16 @@ WORKDIR /app
 RUN python3.10 -m venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Install CUDA PyTorch wheels directly by URL — avoids any index resolution ambiguity
+# Install CUDA PyTorch — cu129 index has aarch64 wheels (cu128 only has x86_64)
 RUN pip install --upgrade pip setuptools && \
     pip install --no-cache-dir \
-        "https://download.pytorch.org/whl/cu128/torch-2.8.0%2Bcu128-cp310-cp310-linux_x86_64.whl" \
-        "https://download.pytorch.org/whl/cu128/torchaudio-2.8.0%2Bcu128-cp310-cp310-linux_x86_64.whl" \
-        "https://download.pytorch.org/whl/cu128/torchvision-0.23.0%2Bcu128-cp310-cp310-linux_x86_64.whl"
+        --index-url https://download.pytorch.org/whl/cu129 \
+        --extra-index-url https://pypi.org/simple \
+        "torch==2.8.0" \
+        "torchaudio==2.8.0" \
+        "torchvision==0.23.0"
 
-COPY pyproject.toml ./
-
-# Install remaining dependencies — torch is already installed so pip won't touch it
+# Install remaining dependencies from PyPI
 RUN pip install --no-cache-dir \
         "ctranslate2>=4.5.0" \
         "faster-whisper>=1.2.0" \
@@ -40,7 +40,7 @@ RUN pip install --no-cache-dir \
         "fastapi>=0.110.0" \
         "python-multipart>=0.0.9"
 
-# Copy source and install whisperx — no-deps prevents pip re-resolving torch
+# Copy source and install whisperx — no-deps prevents pip re-resolving torch from PyPI
 COPY . .
 RUN pip install --no-cache-dir --no-deps -e .
 
